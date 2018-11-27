@@ -17,7 +17,7 @@ library(eeptools)
 library(lubridate)
 
 # Read in the data file
-dt2 <- read_csv("divChildAdult_AnimalQs.csv") 
+dt2 <- read_csv("diversity_fulldataset_cleaned.csv") 
 
 # Converting variables to integers 
 dt2$exp_choice <- factor(dt2$exp_choice)
@@ -183,12 +183,12 @@ dt_div_for_graphs$response <- as.integer(dt_div_for_graphs$response)
 dt_con_for_graphs$response <- as.integer(dt_con_for_graphs$response)
 
 # Means by age and experimenter choice, when relevant
-means_diversity <- aggregate(response ~ exp_choice+age, dt_div_for_graphs, mean)
+means_diversity <- aggregate(response ~ exp_choice+age_factor, dt_div_for_graphs, mean)
 means_control <- aggregate(response ~ age, dt_con_for_graphs, mean)
 
 # Making a summary table for diversity condition 
 # calculating means, sds, etc
-means_d <-  ddply(dt_div_for_graphs, c("age", "exp_choice"), summarise,
+means_d <-  ddply(dt_div_for_graphs, c("age_exact", "exp_choice"), summarise,
                   N    = length(response),
                   mean = mean(response),
                   sd   = sd(response),
@@ -223,7 +223,7 @@ theme_set(theme_classic())
 # plotting diversity condition with age in different panels 
 plot_diversity <- ggplot(data = means_diversity) + 
   facet_grid (
-    . ~ age
+    . ~ age_factor
   ) +
   scale_y_continuous(expand = c(0, 0)
   ) +
@@ -249,7 +249,7 @@ plot_diversity <- ggplot(data = means_diversity) +
              position = position_jitter(w = 0.25, h = 0),
              shape = 1,
              size = 2) +
-  geom_point(aes(x = exp_choice, y = response, color=age),
+  geom_point(aes(x = exp_choice, y = response, color=age_factor),
              shape = 16,
              size = 7
   ) 
