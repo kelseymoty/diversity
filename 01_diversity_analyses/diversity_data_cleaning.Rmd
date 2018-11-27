@@ -22,6 +22,7 @@ Next, we need to read in the correct data file (both the child and adult data fi
 ```{r}
 #Read in the data files 
 #This file contains data from children and adults, in wide format
+setwd("../04_data")
 adult_data <- read_csv("diversity_adult_data.csv")
 child_data <- read_csv("diversity_child_data.csv")
 
@@ -63,16 +64,13 @@ check <- temp_data %>%
   )
 )
 
-# filtering out participants who answered incorrectly on Audiocheck2, Audiocheck3, warmups, and lunch and laundry2
+# filtering out participants who answered incorrectly on Audiochecks
 check <- subset(
   check,
   correct == "0" &
     (stim1 == "AudioCheck2" |
       stim1 == "AudioCheck3" |
-      stim1 == "warmup" |
-      stim1 == "warmup2" |
-      stim1 == "laundry2" |
-      stim1 == "lunch2")
+      stim1 == "AudioCheck")
 )
 
 # removing participants who missed at least one attention check
@@ -110,13 +108,14 @@ check <- temp_data_c %>%
                           )
   )
 
+# WE ARE NOT EXCLUDING CHILDREN FOR WARM UP
 # filtering out participants who answered incorrectly on lunch2 or laundry2
-check <- subset(
-  check,
-  correct == "0" &
-    (stim1 == "laundry2" |
-     stim1 == "lunch2")
-)
+# check <- subset(
+#   check,
+#   correct == "0" &
+#     (stim1 == "laundry2" |
+#      stim1 == "lunch2")
+# )
 
 # removing participants who missed at least one attention check
 temp_data_c <- anti_join(temp_data_c, check, by = "id") 
