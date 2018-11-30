@@ -118,7 +118,7 @@ check <- temp_data_c %>%
 # )
 
 # removing participants who missed at least one attention check
-temp_data_c <- anti_join(temp_data_c, check, by = "id") 
+# temp_data_c <- anti_join(temp_data_c, check, by = "id") 
 
 ```
 
@@ -129,10 +129,10 @@ Breaking data into demo datafile and test datafile
 data <- rbind(temp_data, temp_data_c)
 
 # creating data file for demographic data only
-data_demographics <- data %>% filter(type == "form") %>% select(id, head, response, age)
+data_demographics <- data %>% filter(type == "form") %>% dplyr::select(id, head, response, age)
 
 # keeping only test trials in main dataset since we no longer need attention check trials
-data %<>% filter(type == "test" & !stim1 %in% c("AudioCheck", "AudioCheck2", "AudioCheck3", "warmup", "warmup2", "lunch1", "lunch2", "laundry1", "laundry2", "download-4", "laundry11", "laundry21final")) %>% select(id, stim1, response, age)
+data %<>% filter(type == "test" & !stim1 %in% c("AudioCheck", "AudioCheck2", "AudioCheck3", "warmup", "warmup2", "lunch1", "lunch2", "laundry1", "laundry2", "download-4", "laundry11", "laundry21final")) %>% dplyr::select(id, stim1, response, age)
 
 
 ```
@@ -177,7 +177,7 @@ Editing demographics forms
 ##creating separate demo for child vs adult data and converting to long
 child_demographics <- data_demographics %>% 
   filter(age == "child") %>% 
-  spread(head, response)
+  tidyr::spread(head, response)
 adult_demographics <- data_demographics %>% 
   filter(age == "adult") %>% 
   mutate(head = ifelse(!is.na(head), head, 
@@ -252,6 +252,8 @@ data <- data[,names(data) %in% a]
 data$age_factor <- as.factor(data$age_factor)
 
 write.csv(data, file = "diversity_fulldataset_cleaned.csv", row.names = FALSE)
+write.csv(child_demographics, file = "testable_demographics_child.csv", row.names = FALSE)
+write.csv(adult_demographics, file = "testable_demographics_adult.csv", row.names = FALSE)
 
 # TODO write_csv is better and faster, but some reason, pushing an error... 
 # write_csv(final_data, file.path(dir, "diversity_fulldataset_cleaned.csv"))
