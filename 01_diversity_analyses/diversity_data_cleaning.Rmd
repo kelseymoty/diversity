@@ -2,32 +2,29 @@
 title: "Cleaning up data files for diversity analyses"
 output: # html_notebook
 ---
-## IMPORTANT NOTE: to have fully cleaned data, need to determine exclusion criteria
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 First we need to load in the appropriate libraries and making sure we are in the correct working directory. Currently this file and the data are stored in the same folder, so working directory should be good. 
 
-```{r}
+```{r packageload,error=TRUE, message=FALSE}
 # loading libraries needed to tidy data
 library(data.table)
 library(tidyverse)
 library(lubridate)
-
-# check your working directory 
-getwd()
-# setwd() if you need to
+library(here)
 ```
 
 Next, we need to read in the correct data file (both the child and adult data files) and merge them together. Currently, the files are merged testable files that need to be cleaned and saved in long format. 
 
-```{r}
+```{r data, error=TRUE, message=FALSE}
 #Read in the data files 
 #This file contains data from children and adults, in wide format
-setwd("../04_data")
-adult_data <- read_csv("diversity_adult_data.csv")
-child_data <- read_csv("diversity_child_data.csv")
 
-# Two child participants have same ID (two 1795M). Changning second 1795M to 1795Ma
-child_data$id <- ifelse(child_data$id == "1795M" & child_data$calibration == .65, "1795Ma", child_data$id)
+adult_data <- here::here("data", "diversity_adult_data.csv") %>% read_csv()
+child_data <- here::here("data", "diversity_child_data_120718.csv") %>% read_csv()
 
 ```
 
