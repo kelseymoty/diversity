@@ -1,0 +1,153 @@
+---
+title: "Developmental changes in strategies for gathering evidence about biological kinds: Results"
+author: "Emily Foster-Hanson\\*, Kelsey Moty\\*, John Daryl Ocampo, Amanda Cardarelli, and Marjorie Rhodes"
+date: "Last updated January 7, 2019"
+output:
+  word_document: default
+---
+```{r setup, include=FALSE}
+## Loading libraries
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(ordinal) # used for ordinal logistic regressions
+library(ucminf) # pretty sure ordinal imports it but will import it explicitly
+library(lme4) # ^^^
+library(plyr) # pretty sure my helper function uses plyr
+library(emmeans) # used for ordinal post-hoc pairwise comparisons
+library(here) # for loading data
+library(Rmisc) # for summarySE
+library(knitr)
+library(effects)
+```
+
+```{r, include=FALSE}
+# Cleaning up the datasets
+clean_data <- here::here("cleaning", "diversity_data_cleaning.R")
+source(clean_data)
+```
+
+```{r, include=FALSE}
+# Read in the data file
+dt2 <- here::here("data", "diversity_fulldataset_cleaned.csv") %>% 
+  read_csv() 
+
+# Converting variables to integers 
+dt2$exp_choice <- factor(dt2$exp_choice)
+dt2$response <- factor(dt2$response)
+dt2$age_factor <- factor(dt2$age_factor)
+```
+
+```{r, include=FALSE}
+# Cleaning up demographics
+get_demographics <- here::here("cleaning","diversity_cleaning_demographics.R")
+source(get_demographics)
+```
+
+*2.1 Participants*
+
+Participants included children ages 5-6 (*N* = `r nrow(diversity_demo5.6)`; *M* age = `r round(mean(diversity_demo5.6$age_exact, na.rm = TRUE), 2)`; `r sum(diversity_demo5.6$Gender == "Male")` male), 7-8 (*N* = `r nrow(diversity_demo7.8)`; *M* age = `r round(mean(diversity_demo7.8$age_exact, na.rm = TRUE), 2)`; `r sum(diversity_demo7.8$Gender == "Male")` male), and 9-10 (*N* = `r nrow(diversity_demo9.10)`; *M* age = `r round(mean(diversity_demo9.10$age_exact, na.rm = TRUE), 2)`; `r sum(diversity_demo9.10$Gender == "Male")` male), recruited and tested in the American Museum of Natural History (AMNH) in New York City; most were from urban and suburban environments across the United States. 
+Children whose parents provided demographics information (`r round((sum(diversity_demo_child_keepers$RE == "Unreported", na.rm = TRUE))/nrow(diversity_demo_child_keepers)*100, 0)`% chose not to) were `r round((sum(diversity_demo_child_keepers_reported$RE == "White", na.rm = TRUE))/nrow(diversity_demo_child_keepers_reported)*100, 0)`% White, `r round((sum(diversity_demo_child_keepers_reported$RE == "Black", na.rm = TRUE))/nrow(diversity_demo_child_keepers_reported)*100, 0)`% Black, `r round((sum(diversity_demo_child_keepers_reported$RE == "Asian", na.rm = TRUE))/nrow(diversity_demo_child_keepers_reported)*100, 0)`% Asian, and `r round((sum(diversity_demo_child_keepers_reported$RE == "Mixed", na.rm = TRUE))/nrow(diversity_demo_child_keepers_reported)*100, 0)`% more than one race; of these, `r round((sum(diversity_demo_child_keepers_reported$Hispanic == "1", na.rm = TRUE))/nrow(diversity_demo_child_keepers_reported)*100, 0)`% were Hispanic (of any race). For additional background information about the sample (including parental report of their children's experiences with nature), see https://osf.io/6yts8/. Parents provided written informed consent and children gave verbal assent. The Institutional Review Boards of the authors' university and of AMNH approved all study procedures. The data of 6 additional children were not recorded because they chose not to complete the study; an additional 22 children began testing but are not included in analyses because of technical issues during testing.
+
+Participants also included adults (*N* = `r nrow(diversity_demo_adult)`; *M* age = `r round(mean(diversity_demo_adult$age_exact, na.rm = TRUE), 2)`; `r sum(diversity_demo_adult$Gender == "Male")` male; `r round((sum(diversity_demo_adult$RE == "White", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% White, `r round((sum(diversity_demo_adult$RE == "Black or African American", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% Black, `r round((sum(diversity_demo_adult$RE == "Asian", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% Asian, `r round((sum(diversity_demo_adult$RE == "Mixed", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% more than one race, and `r round((sum(diversity_demo_adult$RE == "Unreported", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% unreported; `r round((sum(diversity_demo_adult$hispanic == "1", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% were Hispanic/Latino of any race) recruited from Amazon Mechanical Turk. Three additional adults were excluded because they failed to correctly answer attention checks.
+
+
+```{r, include=FALSE}
+# Analyses on full dataset
+## Ordinal logistic regression on full dataset comparing condition by age 
+olr_full <- here::here("analyses","olr_full.R")
+source(olr_full)
+```
+
+```{r, include=FALSE}
+# Analyses on diversity condition
+# Ordinal logistic regression with both adult and child data (age treated as categorical)
+olr_diversity <- here::here("analyses","olr_diversity.R")
+source(olr_diversity)
+
+# Ordinal logistic regression with just children's data, with age as a continuous variable
+olr_diversity_child <- here::here("analyses","olr_diversity_child.R")
+source(olr_diversity_child)
+
+# Ordinal logistic regression for children's data broken down by experimenter choice
+olr_diversity_child_by_exp_choice <- here::here("analyses","olr_diversity_child_by_exp_choice.R")
+source(olr_diversity_child_by_exp_choice)
+
+# Summary of adult's and kids' responses in diversity condition
+dt2_div_numeric <- dt2_div
+dt2_div_numeric$response <- as.numeric(dt2_div_numeric$response)
+
+
+data_summary <- summarySE(dt2_div_numeric, 
+                          measurevar = "response",
+                          groupvars = c("age_factor", 
+                                        "exp_choice")
+)
+```
+
+```{r, include=FALSE}
+# Analyses on control condition
+# Ordinal logistic regression on control condition data (both adults and kids)
+olr_control <- here::here("analyses","olr_control.R")
+source(olr_control)
+
+# Ordinal logistic regression on control condition data (just kid data)
+olr_control_child <- here::here("analyses","olr_control_child.R")
+source(olr_control_child)
+```
+
+*3. Results*
+
+*3.1 Experimental data analyses*
+
+We analyzed participants' choices on the animal scales using an ordinal logistic regression. For analyses including adults, we treated age as a categorical variable; for comparable analyses with children only, we treated age as a continuous variable. We report the results of likelihood ratio tests and means with 95% confidence intervals.
+
+In the Test condition, participants' samples varied by age ($\chi^2$(`r diversity_main$Df[3]`) = `r round((diversity_main$LRT[3]),2)`, *p* < `r ifelse(diversity_main[3,4] < .001, .001, round(diversity_main[3,4],3))`) and character choice ($\chi^2$(`r diversity_main$Df[2]`) = `r round((diversity_main$LRT[2]),2)`, *p* < `r ifelse(diversity_main[2,4] < .001, .001, round(diversity_main[2,4],3))`) with a marginal interaction between age and character choice ($\chi^2$(`r diversity_int$Df[2]`) = `r round((diversity_int$LRT[2]),2)`, *p* = `r ifelse(diversity_int[2,4] < .001, .001, round(diversity_int[2,4],2))`). When the character chose the *least* extreme exemplar as the first element in the sample (exemplar 1, e.g., the slowest cheetah), all participants selected maximally extreme and, therefore, maximally diverse exemplars as the second element in the sample (Ages 5-6: *M* = `r round(data_summary$response[1],2)`, 95% CI [`r round(data_summary$response[1]-data_summary$ci[1],2)`, `r round(data_summary$response[1]+data_summary$ci[1],2)`]; Ages 7-8: *M* = `r round(data_summary$response[6],2)`, 95% CI [`r round(data_summary$response[6]-data_summary$ci[6],2)`, `r round(data_summary$response[6]+data_summary$ci[6],2)`]; Ages 9-10: *M* = `r round(data_summary$response[11],2)`, 95% CI [`r round(data_summary$response[11]-data_summary$ci[11],2)`, `r round(data_summary$response[11]+data_summary$ci[11],2)`]; Adults: *M* = `r round(data_summary$response[16],2)`, 95% CI [`r round(data_summary$response[16]-data_summary$ci[16],2)`, `r round(data_summary$response[16]+data_summary$ci[16],2)`]; Figure 2). However, when the character selected the *most* extreme exemplar as the first element in the sample (exemplar 5, e.g., the fastest cheetah), younger children selected more extreme and, therefore, less diverse exemplars as the second element in the sample (Ages 5-6: *M* = `r round(data_summary$response[5],2)`, 95% CI [`r round(data_summary$response[5]-data_summary$ci[5],2)`, `r round(data_summary$response[5]+data_summary$ci[5],2)`]; Ages 7-8: *M* = `r round(data_summary$response[10],2)`, 95% CI [`r round(data_summary$response[10]-data_summary$ci[10],2)`, `r round(data_summary$response[10]+data_summary$ci[10],2)`]) while older children (Ages 9-10: *M* = `r round(data_summary$response[15],2)`, 95% CI [`r round(data_summary$response[15]-data_summary$ci[15],2)`, `r round(data_summary$response[15]+data_summary$ci[15],2)`]) and adults (*M* = `r round(data_summary$response[20],2)`, 95% CI [`r round(data_summary$response[20]-data_summary$ci[20],2)`, `r round(data_summary$response[20]+data_summary$ci[20],2)`]) chose less extreme, more diverse, exemplars. Younger children's preferred samples were thus both less diverse and more extreme than those preferred by older children and adults.
+  
+  Age-related changes in sample selection strategies held even when only examining data from children, with children's exact age included in the model as a continuous variable. Children across ages chose the most extreme animal (exemplar 5 on the scale) when the character selected the least extreme exemplar (exemplar 1; $\chi^2$(`r div_exp1$Df[2]`) = `r round(div_exp1$LRT[2],2)`, *p* = `r round(div_exp1[2,4],2)`). Younger children selected more extreme exemplars regardless of character choice, while older children varied their selections more depending on character choice (main effect of age when the character selected exemplar 2: $\chi^2$(`r div_exp2$Df[2]`) = `r round(div_exp2$LRT[2],2)`, *p* = `r round(div_exp2[2,4],2)`; exemplar 3: $\chi^2$(`r div_exp3$Df[2]`) = `r round(div_exp3$LRT[2],2)`, *p* = `r round(div_exp3[2,4],2)`; exemplar 4: $\chi^2$(`r div_exp4$Df[2]`) = `r round(div_exp4$LRT[2],2)`, *p* = `r round(div_exp4[2,4],2)`; exemplar 5: $\chi^2$(`r div_exp5$Df[2]`) = `r round(div_exp5$LRT[2],2)`, *p* < `r round(div_exp5[2,4],2)`). 
+  
+We did not find an effect of age on participants' sample selections in the Control condition ($\chi^2$(`r control_main$Df[2]`) = `r round(control_main$LRT[2],2)`, *p* = `r round(control_main[2,4],2)`) suggesting that the results in the Test condition relate specifically to how children evaluate multiple exemplar samples, not simply to how they respond to these materials; for additional analyses, see https://osf.io/6yts8/.
+
+```{r, echo=FALSE}
+plotting_continuous_diversity <- here::here("plots", "plot_continuous_diversity.R")
+source(plotting_continuous_diversity)
+
+plot_continuous_diversity
+```
+*Figure 2*
+
+Participant selections on the animal scales in the Test condition, by character choice, on the animal scale. Lines represent children's average responses across age, and green shaded area reflects 95% confidence intervals. Large triangles reflect adults' group average responses, and error bars reflect 95% confidence intervals. Small dots reflect individual participant responses. Age is treated continuously on the x-axis, except for adults (who are graphed as a single group). Higher values are more extreme on characteristic features. Pairwise comparisons revealed that 7-8 year olds chose significantly less diverse samples than 9-10 year olds (*t* = `r round(diversity_pairwise$contrasts$estimate[4],2)`, *SE* = `r round(diversity_pairwise$contrasts$SE[4],2)`, *p* = `r round(diversity_pairwise$contrasts$p.value[4],2)`) but did not differ significantly from 5-6 year olds (*t* = `r round(diversity_pairwise$contrasts$estimate[1],2)`, *SE* = `r round(diversity_pairwise$contrasts$SE[1],2)`, *p* = `r round(diversity_pairwise$contrasts$p.value[1],2)`); 9-10 year olds' responses did not differ significantly from adults' (*t* = `r round(diversity_pairwise$contrasts$estimate[6],2)`, *SE* = `r round(diversity_pairwise$contrasts$SE[6],2)`, *p* = `r round(diversity_pairwise$contrasts$p.value[6],2)`).
+
+#Supplemental Analyses
+
+*1. Control condition supplementary information*
+
+Participants in the Control condition completed five trials in which they chose a one-exemplar sample from to look at in order to learn about each animal kind. In our preliminary analyses of this condition, we did not find an effect of age on participants' sample selections, neither when adults were included in the model ($\chi^2$(`r control_main$Df[2]`) = `r round(control_main$LRT[2],2)`, *p* = `r round(control_main[2,4],2)`) nor when we examined just children's responses ($\chi^2$(`r control_main_children$Df[2]`) = `r round(control_main_children$LRT[2],2)`, *p* = `r round(control_main_children[2,4],2)`). 
+
+This finding was surprising given the robust pattern of age-related change in representativeness and informativeness judgments observed in previous work using these animal scales (Foster-Hanson & Rhodes, in press). The design of the current study diverged from that of previous work, however. In previous studies, participants generalized a novel property of either the most extreme or the average exemplar on the scale to a new category member; younger children preferred to generalize the property of the most extreme exemplar, with a gradual shift across childhood towards generalizing more from the average exemplar. In contrast, the current study asked participants to pick one animal on each scale to "look at" in order to learn about the kind. This wording may have made participants more sensitive to dangerous or noxious animal category members-i.e., one would not want to approach and "look at" the stinkiest skunk in order to learn, regardless of how informative such a skunk might be. Indeed, for animal kinds whose characteristic properties were dangerous or unpleasant (i.e., sharks, porcupines, and skunks), some younger children appeared to pick the least extreme exemplar on the scale, rather than the most extreme, with older children and adults choosing exemplars closer to the middle of the scale. 
+
+In this vein, for exploratory purposes, we recoded participants' responses as binary, with selections of either the *most* extreme animal (i.e., exemplar 5) or the *least* extreme (i.e., exemplar 1) on each scale coded as 1, and selections of exemplars 2-4 coded as 0. We analyzed these data using a Generalized Linear Mixed Model (GLMM) to specify a binomial distribution, with age as a predictor. We report the results of likelihood ratio tests and means with 95% confidence intervals.
+
+```{r, include=FALSE}
+# Analyses of control data where responses are recoded as binary (both adult and kid data)
+glmm_control_binary <- here::here("analyses","glmm_control_binary.R")
+source(glmm_control_binary)
+
+# Analyses of control data where responses are recoded as binary (only child data so age can be treated continuously)
+glmm_control_binary_child <- here::here("analyses","glmm_control_binary_child.R")
+source(glmm_control_binary_child)
+```
+
+These analyses revealed a main effect of age, both with age treated categorically to include adults ($\chi^2$(`r binary_age$Df[2]`) = `r round(binary_age$LRT[2],2)`, *p* < `r ifelse(binary_age[2,4] < .001, .001, round(binary_age[2,4],3))`), and with age treated continuously including children's responses only ($\chi^2$(`r binaryC_age$Df[2]`) = `r round(binaryC_age$LRT[2],2)`, *p* = `r ifelse(binaryC_age[2,4] < .001, .001, round(binaryC_age[2,4],3))`). Children ages 5-6 (*M* = `r round((means_binary[1,2]),2)`, 95% CI [`r round((means_binary[1,4]),2)`, `r round((means_binary[1,5]),2)`]) and 7-8 (*M* = `r round((means_binary[2,2]),2)`, 95% CI [`r round((means_binary[2,4]),2)`, `r round((means_binary[2,5]),2)`]; *p* = `r round(pairwise_binary$contrasts$p.value[1],2)`) tended to select extreme exemplars from which to learn about each animal kind, whereas children ages 9-10 (*M* = `r round((means_binary[3,2]),2)`, 95% CI [`r round((means_binary[3,4]),2)`, `r round((means_binary[3,5]),2)`]) and adults (*M* = `r round((means_binary[4,2]),2)`, 95% CI [`r round((means_binary[4,4]),2)`, `r round((means_binary[4,5]),2)`]; *p* = `r round(pairwise_binary$contrasts$p.value[6],2)`) selected more average exemplars from which to learn about each kind. The responses of children ages 7-8 differed marginally from 9-10 year olds' (*p* = `r round(pairwise_binary$contrasts$p.value[4],2)`) and significantly from adults' (*p* < `r round(pairwise_binary$contrasts$p.value[5],3)`).
+
+```{r, echo=FALSE, warning=FALSE}
+plotting_continuous_binary <- here::here("plots","plot_continuous_control_binary.R")
+source(plotting_continuous_binary)
+
+plot_continuous_control_binary
+```
+*Figure S1*
+
+Probability of selecting an extreme exemplar (1 or 5 on the animal scales) in the Control condition, by age. Selections are coded as binary, with selections of extreme exemplars at either end of the scale (5, 1) coded as 1, and selections of average exemplars in middle of the scale (2, 3, or 4) coded as 0. The line represents children's average responses across age, and the green shaded area reflects 95% confidence intervals. The large triangle reflects adults' average response, and error bar reflects 95% confidence intervals. Small dots reflect individual participant responses. Age is treated continuously on the x-axis, except for adults (who are graphed as a single group).
+
+
