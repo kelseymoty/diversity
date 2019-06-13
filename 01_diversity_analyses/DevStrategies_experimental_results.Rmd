@@ -52,11 +52,15 @@ Children whose parents provided demographics information (`r round((sum(diversit
 Participants also included adults (*N* = `r nrow(diversity_demo_adult)`; *M* age = `r round(mean(diversity_demo_adult$age_exact, na.rm = TRUE), 2)`; `r sum(diversity_demo_adult$Gender == "Male")` male; `r round((sum(diversity_demo_adult$RE == "White", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% White, `r round((sum(diversity_demo_adult$RE == "Black or African American", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% Black, `r round((sum(diversity_demo_adult$RE == "Asian", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% Asian, `r round((sum(diversity_demo_adult$RE == "Mixed", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% more than one race, and `r round((sum(diversity_demo_adult$RE == "Unreported", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% unreported; `r round((sum(diversity_demo_adult$hispanic == "1", na.rm = TRUE))/nrow(diversity_demo_adult)*100, 0)`% were Hispanic/Latino of any race) recruited from Amazon Mechanical Turk. Three additional adults were excluded because they failed to correctly answer attention checks.
 
 
-```{r, include=FALSE}
+```{r }
 # Analyses on full dataset
 ## Ordinal logistic regression on full dataset comparing condition by age 
 olr_full <- here::here("analyses","olr_full.R")
 source(olr_full)
+
+## Ordinal logistic regression on full dataset comparing condition by age (child data only)
+olr_full_child <- here::here("analyses","olr_full_child.R")
+source(olr_full_child)
 ```
 
 ```{r, include=FALSE}
