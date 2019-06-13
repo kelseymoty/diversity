@@ -79,6 +79,14 @@ comparing_strategy_use_children <- here::here("analyses", "mlr_strategy_use_chil
 source(comparing_strategy_use_children)
 ```
 
+```{r, include=FALSE}
+# average posterior probability (as a metric of model certainty)
+model_certainty <- top_strategies %>%
+  summarize(mean_posterior = mean(posterior),
+            sd_posterior = sd(posterior))
+
+```
+
 
 *3.2.1 Bayesian model results*
 
