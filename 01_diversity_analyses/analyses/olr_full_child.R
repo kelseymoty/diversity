@@ -40,5 +40,24 @@ results_clmm_nointeract_child <- clmm(response ~ condition + age_exact + (1|id) 
 
 ordinal_full_main_child <- drop1(results_clmm_nointeract_child, test = "Chi")
 
+# Breaking down the interaction effect
+# getting main effect of age exact for control (single condition) kids
+results_clmm_child_single <- clmm(response ~ age_exact  + (1|id)  + item, 
+                           data = dt2_control_c, 
+                           link = "logit", 
+                           Hess = TRUE, 
+                           threshold = "flexible")
+single_child <- drop1(results_clmm_child_single, test = "Chi")
+
+# getting main effect of age exact for control (Set condition) kids
+results_clmm_child_set <- clmm(response ~ age_exact  + (1|id)  + item, 
+                                  data = dt2_div_c, 
+                                  link = "logit", 
+                                  Hess = TRUE, 
+                                  threshold = "flexible")
+set_child <- drop1(results_clmm_child_set, test = "Chi")
+
 # computing simple slopes
 ordinal_full_child_ss <- emtrends(results_clmm_child, pairwise ~ condition, var="age_exact")
+
+ordinal_full_child_emtrends <- as.tibble(ordinal_full_child_ss$emtrends)

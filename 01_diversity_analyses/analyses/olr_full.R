@@ -12,7 +12,7 @@ summary(results_clmm)
 # To use LR, need to compare models with and without paramter of interest
 
 # Testing if interaction effect is significant
-ordinal_int <- drop1(results_clmm, test = "Chi")
+ordinal_full_int <- drop1(results_clmm, test = "Chi")
 
 # Testing if random effects are significant 
 # testing if random effect of participant is significant
@@ -38,4 +38,7 @@ results_clmm_nointeract <- clmm(response ~ condition + age_factor + (1|id) + (1|
                                 Hess = TRUE, 
                                 threshold = "flexible")
 
-ordinal_main <- drop1(results_clmm_nointeract, test = "Chi")
+ordinal_full_main <- drop1(results_clmm_nointeract, test = "Chi")
+
+
+

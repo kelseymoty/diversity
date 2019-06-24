@@ -5,7 +5,8 @@ date: "Last updated January 18, 2019"
 output:
   word_document: default
 ---
-```{r, include=FALSE}
+```{r library, include=FALSE}
+# Loading libraries
 library(tidyverse)
 library(vcd) # used to get Cramer's V effect size on Fisher's exact test
 library(rcompanion) # used to do pairwise Fisher's exact test
@@ -28,31 +29,31 @@ There are 8 proposed strategies that children and adults may be utilizing in the
 5. **Researcher-adjacent Strategy:**: In this strategy, participants choose an option that is adjacent to the experimenter's choice, either the option above or below. 
 6-8. **Pick N Strategy:** In addition to the middle and extreme strategies, participants show a preference for any given animal (e.g., always picking 2). A Pick-1, Pick-2, and Pick-4 strategy will also be implemented. 
 
-```{r, include=FALSE}
+```{r strategy, include=FALSE}
 # Defining hypothesis space and adjusting probabilites for epsilon (probability partcipants may act randomly)
 defining_strategies <- here::here("bayesian_modeling", "defining_strategies.R")
 source(defining_strategies)
 ```
 
-```{r, include=FALSE}
+```{r import, include=FALSE}
 # Reading in the behavioral data
 get_data <- here::here("bayesian_modeling", "import_behavioral_data.R")
 source(get_data)
 ```
 
-```{r, include=FALSE}
+```{r posteriors, include=FALSE}
 # Computing likelihoods and posteriors for adult data
 compute_likelihoods_posteriors <- here::here("bayesian_modeling", "compute_likelihoods_posteriors.R")
 source(compute_likelihoods_posteriors)
 ```
 
-```{r, include=FALSE}
+```{r ranking, include=FALSE}
 # Ranking strategies based on posteriors
 ranking_strategies <- here::here("bayesian_modeling", "ranking_strategies.R")
 source(ranking_strategies)
 ```
 
-```{r, include=FALSE}
+```{r plotting, include=FALSE}
 # Plotting likely strategy each participant used
 plot_top <- here::here("plots", "plot_top_strategies.R")
 source(plot_top)
@@ -66,20 +67,20 @@ source(plot_top3)
 plot_top3_strategies
 ```
 
-```{r, include=FALSE}
+```{r comparing, include=FALSE}
 # Running Fisher's exact test to compare frequencies of strategy use across age groups 
 # this step takes awhile to run
 comparing_strategy_use <- here::here("analyses", "fishers_exact_strategy_use.R")
 source(comparing_strategy_use)
 ```
 
-```{r, include=FALSE}
+```{r comparing_kids, include=FALSE}
 # Multinomial logistic regression examining age-related changes in childrem's strategy use
 comparing_strategy_use_children <- here::here("analyses", "mlr_strategy_use_child.R")
 source(comparing_strategy_use_children)
 ```
 
-```{r, include=FALSE}
+```{r certainty, include=FALSE}
 # average posterior probability (as a metric of model certainty)
 model_certainty <- top_strategies %>%
   summarize(mean_posterior = mean(posterior),
@@ -88,17 +89,7 @@ model_certainty <- top_strategies %>%
 ```
 
 
-*3.2.1 Bayesian model results*
-
-The extreme strategy was the most common among children ages 5-8: nearly half (`r round(mean(c(proportion_top_strategy$freq[4],proportion_top_strategy$freq[11])), 4) * 100`%) likely used this strategy. In comparison, this strategy was used by only `r round(mean(c(proportion_top_strategy$freq[18],proportion_top_strategy$freq[22])), 4) * 100`% of older children (ages 9-10) and adults, who instead used the average (`r round(mean(c(proportion_top_strategy$freq[16],proportion_top_strategy$freq[20])), 4) * 100`%) and diverse strategies (`r round(mean(c(proportion_top_strategy$freq[17],proportion_top_strategy$freq[21])), 4) * 100`%; Figure 3).
-
-We quantified these differences in predicted strategy use across age groups (5-6, 7-8, 9-10, and adults) using a Fisher's exact test (as several cells have low observed frequencies; Kim, 2017). We report these results and effect sizes (Cramer's V); p-values for pairwise comparisons are adjusted using Holm's step-down procedure (Holm, 1979). Predicted strategies differed significantly across age (*p* < `r ifelse(fishers$p.value < .001, .001, round(fishers$p.value, 3))`; Cramer's V = `r round(cramers$cramer,3)`). Distribution of predicted strategies did not differ between children ages 5-6 and 7-8 (*p* = `r round(pairwise_fishers$p.adj.Fisher[1],2)`), nor between children ages 9-10 and adults (*p* = `r round(pairwise_fishers$p.adj.Fisher[6],2)`; all other comparisons *p*s < `r round(pairwise_fishers$p.adj.Fisher[4],3)`). 
-
-This pattern of age-related change in selection strategies held when comparing only distributions of the three main strategies of interest (i.e., extreme, average, and diverse; children 5-6 versus 7-8: *p* = `r round(pairwise_fishers_top3$p.adj.Fisher[1], 2)`; children 9-10 versus adults: *p* = `r round(pairwise_fishers_top3$p.adj.Fisher[6], 2)`; all other *p*s < `r round(pairwise_fishers_top3$p.adj.Fisher[5], 3)`). Across age, use of the extreme strategy differed significantly from use of the average (*p* < `r ifelse(pairwise_fishers_strategies$p.adj.Fisher[2] < .001, .001, round(pairwise_fishers_strategies$p.adj.Fisher[2], 3))`) and diverse strategies (*p* = `r round(pairwise_fishers_strategies$p.adj.Fisher[3], 3)`), but use of the average versus diverse strategies did not differ (*p* = `r round(pairwise_fishers_strategies$p.adj.Fisher[1], 2)`).
-
-We found a similar pattern of age-related changes in strategy use when examining only data from child participants (with age treated continuously). In a multinomial logistic regression where the "extreme" strategy was treated as the reference group, we found that age significantly predicted increased use of the average (*b* = `r round(multinom_summary$coefficients[2,2], 2)`, *p* < `r ifelse(p[2,2] < .001, .001, round(p[2,2], 3)`) and diverse strategies (*b* = `r round(multinom_summary$coefficients[3,2], 2)`, *p* = `r ifelse(p[3,2] < .001, .001, round(p[2,2], 3)`) over the extreme strategy. Specifically, with each 1 year increase in age, the odds of children using the average strategy over the extreme strategy more than doubled (*OR* = `r round(odds_ratios[2,2], 2)`, 95% CI [`r round(odds_ratios[2,3], 2)`, `r round(odds_ratios[2,4], 2)`]); similarly, the odds they chose the diverse over the extreme strategy multiplicatively increased by `r round(odds_ratios[3,2], 2)` (95% CI [`r round(odds_ratios[2,5], 2)`, `r round(odds_ratios[2,6], 2)`]). There was no age-related increase in the use of the other five strategies over the extreme strategy (*p*s > `r round(p[5,2], 2)`).
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r display_plot, echo=FALSE, message=FALSE, warning=FALSE}
 plot_top3_strategies
 ```
 
@@ -106,19 +97,23 @@ plot_top3_strategies
 
 The most likely strategy each participant used in their sample selection (as predicted by the Bayesian model). Age is plotted on the x-axis: children's exact age is plotted and adults are grouped categorically. Here, we plot only the top three strategies of all eight possible strategies, given that these strategies are theorectically most relevant to present paper and `r round(proportion_top_strategy %>% group_by(strategy_ll) %>% dplyr::summarize(sums = sum(n)) %>% summarize(prop = sum(sums[strategy_ll == "average" | strategy_ll == "extreme" | strategy_ll == "diverse"])/sum(sums)), 3) * 100`% of participants were predicted to have used one of these three strategies. Violin plots reflect the distribution of strategy use across age. Dots relect individual participants.
 
-*2. Bayesian model supplementary information*
+*2.1.2 Bayesian model*
 
-*2.2 Bayesian model*
+  To directly test our second and third pre-registered hypotheses, we used a Bayesian framework to identify the selection strategies underlying participants' responses in the Set condition. Specifically, each participant provided a set of five responses Specifically, each participant provides a set of five responses $X= \{x^{(1)},x^{(2)},.x^{(c)}\}$ in response to the character's choice $C = \{1, 2, 3, 4, 5\}$ using an unknown strategy $s$, and our goal was to predict the strategy used by participants given their set of responses $P(s|X)$.  
+  We identified eight strategies participants may have employed. Three of the eight strategies were theoretically motivated by previous work on diversity-based reasoning and listed in our pre-registration. Specifically, in line with previous work by Foster-Hanson and Rhodes (2019) finding that younger children's prototypes of biological kinds were more idealized than those held by older children and adults, we expected younger children would employ (1) the extreme strategy (i.e., selecting the most extreme animal on the scale available, regardless of character choice) during sample selection. On the other hand, we expected that older children and adults would use one of the following strategies during sample selection: (2) the diverse strategy (i.e., maximizing distance from the character's choice) or (3) the average strategy (i.e., selecting an animal that when averaged with the character's choice equals 3). Use of either of these two strategies would be consistent with previous work demonstrating that older children and adults find diverse samples more informative, and both would provide coverage of within-category variability (e.g., Gutheil & Gelman, 1997; Rhodes & Leibenson, 2015). We therefore had no a priori predictions about whether older children and adults would use the diverse strategy over the average, or vice versa.
+  In addition to our three pre-registered strategies, we identified an additional five strategies that we did not have a priori predictions about but included to potentially rule out alternative explanations. These strategies include: (4) middle (i.e., always selecting the middle (average) animal on the scale regardless of the character's choice), (5) adjacent (i.e., selecting an animal next to the one the character picked), (6) pick-1 (i.e., uniformly picking animal 1 regardless of the character's choice), (7) pick-2 (i.e., uniformly picking animal 2), and (8) pick-4 (i.e., uniformly picking animal 4). 
+  We assumed in our model that the use of each strategy was equally likely in the prior $P(s)$, that is, $P(s)=  1/n_s$. We computed posteriors $P(s|X)$-the probability that a person used a particular strategy given their responses-using Bayes' Rule (for more details about the set of strategies included in the model, including probabilities used to determine likelihoods, see https://osf.io/6yts8/). We assigned the strategy with the highest posterior probability as the strategy that each participant most likely used. Higher posteriors (with a maximum value of 1) reflect greater certainty that individuals used a given strategy; values closer to 0.125 (i.e., closer to chance) reflect less certainty that participants responded in a systematic or strategic manner. 
 
-We used a Bayesian framework to identify the selection strategies underlying participants' responses in the Diversity condition. Specifically, each participant provides a set of five responses $X= \{x^{(1)},x^{(2)},.x^{(c)}\}$ in response to the experimenter's choice $C = \{1, 2, 3, 4, 5\}$ using an unknown strategy $s$, and our goal was to predict the strategy used by participants given their set of responses $P(s|X)$.  
 
-*2.3 Possible strategies*  
+*2.1.3 Bayesian model results*
+  Overall, the average posterior probability for participants' assigned strategy was high (*M* = .80, *Median* = 0.85, *SD* = 0.20), suggesting that participants did not respond in a random manner and providing evidence that even our youngest participants did not treat all samples of a category as interchangeable. Specifically, our model predicted that participants predominantly used only three of the eight possible strategies: 85.7% of participants were predicted to have used either the extreme, average, or diverse strategy. 
+  The prevalence of these three strategies varied with age, however. The extreme strategy was the most common among children ages 5-8: nearly half (`r round(mean(c(proportion_top_strategy$freq[4],proportion_top_strategy$freq[11])), 3) * 100`%) likely used this strategy. In comparison, the extreme strategy was used by only `r round(mean(c(proportion_top_strategy$freq[18],proportion_top_strategy$freq[22])), 3) * 100`% of older children (ages 9-10) and adults, who instead used the average (`r round(mean(c(proportion_top_strategy$freq[16],proportion_top_strategy$freq[20])), 4) * 100`%) and diverse strategies (`r round(mean(c(proportion_top_strategy$freq[17],proportion_top_strategy$freq[21])), 4) * 100`%; Figure 3). We quantified these differences in predicted strategy use across age groups (5-6, 7-8, 9-10, and adults) using a Fisher's exact test (as several cells have low observed frequencies; Kim, 2017). We report these results and effect sizes (Cramer's V); p-values for pairwise comparisons are adjusted using Holm's step-down procedure (Holm, 1979). 
+  Predicted strategies differed significantly across age (*p* < `r ifelse(fishers$p.value < .001, .001, round(fishers$p.value, 3))`; Cramer's V = `r round(cramers$cramer,3)`). Distribution of predicted strategies did not differ between children ages 5-6 and 7-8 (*p* = `r round(pairwise_fishers$p.adj.Fisher[1],2)`), nor between children ages 9-10 and adults (*p* = `r round(pairwise_fishers$p.adj.Fisher[6],2)`; all other comparisons *p*s < `r round(pairwise_fishers$p.adj.Fisher[4],3)`). This pattern of age-related change in selection strategies held when comparing only distributions of the three main strategies of interest (i.e., extreme, average, and diverse; children 5-6 versus 7-8: *p* = `r round(pairwise_fishers_top3$p.adj.Fisher[1], 2)`; children 9-10 versus adults: *p* = `r round(pairwise_fishers_top3$p.adj.Fisher[6], 2)`; all other *p*s < `r round(pairwise_fishers_top3$p.adj.Fisher[5], 3)`). Across age, use of the extreme strategy differed significantly from use of the average (*p* < `r ifelse(pairwise_fishers_strategies$p.adj.Fisher[2] < .001, .001, round(pairwise_fishers_strategies$p.adj.Fisher[2], 3))`) and diverse strategies (*p* = `r round(pairwise_fishers_strategies$p.adj.Fisher[3], 3)`), but use of the average versus diverse strategies did not differ (*p* = `r round(pairwise_fishers_strategies$p.adj.Fisher[1], 2)`).
+  We found a similar pattern of age-related changes in strategy use when examining only data from child participants (with age treated continuously). In a multinomial logistic regression where the "extreme" strategy was treated as the reference group, we found that age significantly predicted increased use of the average (*b* = `r round(multinom_summary$coefficients[2,2], 2)`, *p* < `r ifelse(p[2,2] < .001, .001, round(p[2,2], 3))`) and diverse strategies (*b* = `r round(multinom_summary$coefficients[3,2], 2)`, *p* = `r ifelse(p[3,2] < .001, .001, round(p[2,2], 3))`) over the extreme strategy. Specifically, with each 1 year increase in age, the odds of children using the average strategy over the extreme strategy more than doubled (*OR* = `r round(odds_ratios[2,2], 2)`, 95% CI [`r round(odds_CI[2,3], 2)`, `r round(odds_CI[2,4], 2)`]); similarly, the odds they chose the diverse over the extreme strategy multiplicatively increased by `r round(odds_ratios[3,2], 2)` (95% CI [`r round(odds_CI[2,5], 2)`, `r round(odds_CI[2,6], 2)`]). There was no age-related increase in the use of the other five strategies over the extreme strategy (*p*s > `r round(p[5,2], 2)`).
+  Finally, it is important to consider the strategies that participants did not use when selecting sets of animals to learn from. Only 4% of participants were predicted to have used the adjacent strategy, and 5% likely used one of the three pick-N strategies (e.g., pick-1, -2 or -4). The low prevalence of these strategies suggests that young children do not just prefer non-diverse samples over diverse samples, but especially prefer samples composed of extreme, idealized exemplars. Adults and older children, in contrast, prefer samples that provide coverage of within-category variability, either by being maximally diverse or by balancing around average features.
+  
+  Specifically, with every one-year increase in age, the odds of children using the average strategy over the extreme strategy more than doubled (OR = 2.29, 95% CI [1.50, 3.50]); similarly, the odds they chose the diverse over the extreme strategy multiplicatively increased by 1.54 (95% CI [1.08, 2.21]).
 
-We identified eight possible strategies that participants may have employed in our task: (1) *extreme* (i.e., always selecting the most extreme animal on the scale regardless of the experimenter's choice; e.g., always selecting animal 5 when possible), (2) *diverse* (i.e., maximizing the distance between their choice and the experimenter's; e.g., if experimenter chooses 4, the participant selects 1), (3) *average* (i.e., selecting an animal that when averaged with the experimenter's choice equals 3; e.g., when the experimenter selects 4, the participant selects 2), (4) *middle* (i.e., always selecting the middle (average) animal on the scale regardless of the experimenter's choice; e.g., always selecting animal 3 when possible), (5) *adjacent* (i.e., selecting an animal next to the one the experimenter picked; e.g., if experimenter chooses 4, participant chooses either 3 or 5), (6) *pick-1* (i.e., uniformly picking animal 1), (7) *pick-2* (i.e., uniformly picking animal 2), and (8) *pick-4* (i.e., uniformly picking animal 4).  
-
-*2.4 Priors and likelihoods*
-
-The model has a prior $p(s)$ and a likelihood $p(X|s)$ for each possible strategy $s$. While we expected that younger children will most often use the extreme strategy when making selections and that older children and adults will most often use either the average or diverse strategy, we assumed in our model that the use of any given strategy $s$ by a participant is equally likely in the prior $P(s)$, that is, $P(s)=  1/n_s$. The likelihood of the set of responses given by the participant assuming a particular strategy $p(X|s)$ was determined using the probabilities specified in Table X. We used these priors and likelihoods to compute the posterior $p(s|X)$-that is, the probability that a person used a particular sampling strategy given their set of responses-using Bayes' Rule.  
 
 *Table 1* See Bayesian_probabilities.Rmd/.docx.
 
